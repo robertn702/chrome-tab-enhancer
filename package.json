@@ -1,0 +1,14 @@
+{
+  "name": "chrome-tab-reorder",
+  "version": "0.0.1",
+  "description": "Reorder chrome tabs",
+  "main": "background.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Robert Niimi <robertn702@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "mousetrap": "^1.6.0"
+  }
+}

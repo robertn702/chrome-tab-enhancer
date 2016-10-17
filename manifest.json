@@ -1,0 +1,38 @@
+{
+  "manifest_version": 2,
+  "name": "Chrome Tab Reorder",
+  "description": "",
+  "version": "0.0.1",
+  "browser_action": {
+    "default_title": "Chrome Tab Reorder"
+  },
+  "background": {
+    "persistent": false,
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
+  "permissions": [
+    "tabs",
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "all_frames": false,
+      "js": [
+        "node_modules/mousetrap/mousetrap.js",
+        "content.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "web_accessible_resources": [
+    "./content.js",
+    "./options.css",
+    "./options.js"
+  ]
+}
