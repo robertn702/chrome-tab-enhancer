@@ -16,3 +16,10 @@ Mousetrap.bind('alt+d', function(e) {
     type: 'DUPLICATE_TAB'
   });
 });
+Mousetrap.bind('alt+w', function(e) {
+  chrome.runtime.sendMessage({
+    type: 'CLOSE_TABS_TO_RIGHT',
+    direction: 1
+  });
+});
+

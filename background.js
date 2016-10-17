@@ -17,6 +17,13 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
         chrome.tabs.duplicate(sender.tab.id);
       }
       break;
+    case 'CLOSE_TABS_TO_RIGHT':
+      if (sender.tab) {
+        chrome.tabs.query({currentWindow: true}, function(allWindowTabs) {
+          chrome.tabs.remove(allWindowTabs.slice(sender.tab.index + 1));
+        });
+      }
+      break;
     default:
       return;
   }
