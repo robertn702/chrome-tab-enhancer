@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Chrome Tab Enhancer",
   "description": "Enhances Chrome's tab shorcuts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "browser_action": {
     "default_title": "Chrome Tab Enhancer"
   },
@@ -16,6 +16,7 @@
     "page": "options.html",
     "chrome_style": true
   },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWMmvp9mXs+3NZsmg+mL8bZeY5xmB6Vtc7Z54Y1HjYfuJbHNDNEbHskgv+3i4GoV24/VOjJiJY0Dp5iZRiHv9/mY/pZSZOuDmh6ZgMV1/xJlx/YAm09w6at6ZiZ7LWfEsEupbkRSjGtR9iciOX8nW/1nEMHCnlsM0wu3m8dGceQv2jgJOB1S+P5NTOjy2y4AAk7Mbjj5I1GS2eoRKY6j1K5uzB792riIRILlbJTevCIGujPkCMQO5W+LFrBRW1lkUDBt7vxxUooF7XChYafz9fpVfNYsV7BmowR34lvyldcpqHmdmBM5R/tv9zZtaK3/hFedqSpv1kEo75fLZQ24GQIDAQAB",
   "permissions": [
     "tabs",
     "<all_urls>"

@@ -1,4 +1,4 @@
-var sendMessage = function(message) {
+function sendMessage(message) {
   chrome.runtime.sendMessage(message);
 }
 

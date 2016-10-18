@@ -20,7 +20,15 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
     case 'CLOSE_TABS_TO_RIGHT':
       if (sender.tab) {
         chrome.tabs.query({currentWindow: true}, function(allWindowTabs) {
-          chrome.tabs.remove(allWindowTabs.slice(sender.tab.index + 1));
+          if (allWindowTabs.length === sender.tab.index + 1) {
+            return;
+          }
+          var tabsToBeRemoved = allWindowTabs
+            .slice(sender.tab.index + 1)
+            .map(function(tabObj) {
+              return tabObj.id;
+            });
+          chrome.tabs.remove(tabsToBeRemoved);
         });
       }
       break;
