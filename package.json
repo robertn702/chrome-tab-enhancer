@@ -4,7 +4,7 @@
   "description": "Reorder chrome tabs",
   "main": "background.js",
   "scripts": {
-    "pack": "zip -r chrome-tab-enhancer.zip ."
+    "pack": "rm -f ./*.zip && zip -r chrome-tab-enhancer.zip ."
   },
   "author": "Robert Niimi <robertn702@gmail.com>",
   "license": "ISC",
