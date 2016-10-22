@@ -28,7 +28,8 @@
         "node_modules/mousetrap/mousetrap.js",
         "content.js"
       ],
-      "matches": ["<all_urls>"]
+      "matches": ["<all_urls>"],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
