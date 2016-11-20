@@ -26,4 +26,8 @@ Mousetrap.bind('alt+w', function(e) {
     direction: 1
   });
 });
-
+Mousetrap.bind('alt+r', function(e) {
+  sendMessage({
+    type: 'RELOAD_TABS'
+  });
+});

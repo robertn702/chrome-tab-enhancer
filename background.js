@@ -32,6 +32,14 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
         });
       }
       break;
+    case 'RELOAD_TABS':
+      if (sender.tab) {
+        chrome.tabs.query({currentWindow: true}, function(allWindowTabs) {
+          allWindowTabs.forEach(function(tab) {
+            chrome.tabs.reload(tab.id);
+          });
+        });
+      }
     default:
       return;
   }
