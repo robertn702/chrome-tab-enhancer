@@ -31,3 +31,28 @@ Mousetrap.bind('alt+r', function(e) {
     type: 'RELOAD_TABS'
   });
 });
+Mousetrap.bind('alt+shift+left', function(e) {
+  sendMessage({
+    type: 'SELECT_TABS',
+    direction: 1
+  });
+});
+Mousetrap.bind('alt+shift+left', function(e) {
+  sendMessage({
+    type: 'SELECT_TABS',
+    direction: -1
+  });
+});
+
+var createMoveToIndex = function(position) {
+  return function(e) {
+    sendMessage({
+      type: 'MOVE_TAB',
+      index: position - 1
+    })
+  }
+}
+
+for (var i = 1; i < 10; i++) {
+  Mousetrap.bind('alt+' + i, createMoveToIndex(i));
+}
