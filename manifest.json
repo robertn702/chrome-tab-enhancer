@@ -2,11 +2,7 @@
   "manifest_version": 2,
   "name": "Chrome Tab Enhancer",
   "description": "Enhances Chrome's tab shorcuts",
-<<<<<<< dadb3d74d0dc63dcea04c0750e19869e240bb5e3
   "version": "0.3.0",
-=======
-  "version": "0.2.0",
->>>>>>> start adding multiple tab select support
   "browser_action": {
     "default_title": "Chrome Tab Enhancer"
   },

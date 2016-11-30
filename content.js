@@ -3,7 +3,6 @@ function sendMessage(message) {
 }
 
 Mousetrap.bind('alt+shift+[', function(e) {
-  console.log('[content] pressed alt+shift+[: ', e);
   sendMessage({
     type: 'MOVE_TAB',
     direction: -1
@@ -31,16 +30,21 @@ Mousetrap.bind('alt+r', function(e) {
     type: 'RELOAD_TABS'
   });
 });
-Mousetrap.bind('alt+shift+left', function(e) {
+Mousetrap.bind('alt+shift+right', function(e) {
   sendMessage({
-    type: 'SELECT_TABS',
+    type: 'HIGHLIGHT_TABS',
     direction: 1
   });
 });
 Mousetrap.bind('alt+shift+left', function(e) {
   sendMessage({
-    type: 'SELECT_TABS',
+    type: 'HIGHLIGHT_TABS',
     direction: -1
+  });
+});
+Mousetrap.bind('alt+shift+m', function() {
+  sendMessage({
+    type: 'MOVE_TO_NEW_WINDOW'
   });
 });
 

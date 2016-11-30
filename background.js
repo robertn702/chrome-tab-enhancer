@@ -1,13 +1,19 @@
-var tabPosition = function(allWindowTabs, tab) {
-  var tabLen = allWindowTabs.length;
-  return {
-    isLast: allWindowTabs.length === tab.index + 1,
-    isFirst: tab.index === 0
+var tabUtils = {
+  allWindowTabs: function(cb) {
+    chrome.tabs.query({currentWindow: true}, cb);
+  },
+  allHighlightedTabs: function(cb) {
+    chrome.tabs.query({currentWindow: true, highlighted: true}, cb);
+  },
+  getCurrent: function(cb) {
+    chrome.tabs.query({currentWindow: true, active: true}, function(currentTabArr) {
+      cb.call(null, currentTabArr[0]);
+    });
   }
-}
+};
 
 chrome.runtime.onMessage.addListener(function(message, sender) {
-  switch(message.type) {
+  switch (message.type) {
     case 'MOVE_TAB':
       if (sender.tab && message.direction || message.index != null) {
         console.log('[background] message.index: ', message.index);
@@ -52,24 +58,57 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
         });
       }
       break;
-    case 'SELECT_TABS':
+    case 'HIGHLIGHT_TABS':
       if (sender.tab) {
-        if (direction === 1) {
-          chrome.tabs.query({currentWindow: true}, function(allWindowTabs) {
-          })
-        } else if (direction === -1) {
-          chrome.tabs.query({currentWindow: true, highlighted: true}, function(allWindowTabs) {
-            if (tabPosition(allWindowTabs, sender.tab).isFirst) {
-              return;
+        tabUtils.allWindowTabs(function(allWindowTabs) {
+          tabUtils.allHighlightedTabs(function(allHighlightedTabs) {
+            console.log('[background] allHighlightedTabs: ', allHighlightedTabs);
+            var highlightedTabIdxs = allHighlightedTabs.map(function(highlightedTab) {
+              return highlightedTab.index;
+            });
+
+            if (message.direction === 1) {
+              var lastHighlightedIndex = allHighlightedTabs[allHighlightedTabs.length - 1].index;
+              /* highlighted tab is last */
+              if (lastHighlightedIndex === allWindowTabs.length - 1) {
+                return;
+              }
+              chrome.tabs.highlight({tabs: highlightedTabIdxs.concat(lastHighlightedIndex + 1)});
             }
 
-            chrome.tabs.highlight([
-
-            ])
+            if (message.direction === -1) {
+              var firstHighlightedIndex = allHighlightedTabs[0].index;
+              console.log('[background] firstHighlightedIndex: ', firstHighlightedIndex);
+              if (firstHighlightedIndex === 0) {
+                return;
+              }
+              chrome.tabs.highlight({tabs: highlightedTabIdxs.concat(firstHighlightedIndex - 1)});
+            }
           });
-        }
+        });
       }
       break;
+    case 'MOVE_TO_NEW_WINDOW':
+      if (sender.tab) {
+        tabUtils.allHighlightedTabs(function(allHighlightedTabs) {
+          chrome.windows.create(function(newWindow) {
+          console.log('[background] newWindow: ', newWindow);
+            var highlightedTabIds = allHighlightedTabs.map(function(highlightedTab) {
+              return highlightedTab.id;
+            });
+            console.log('[background] highlightedTabIds: ', highlightedTabIds);
+            chrome.tabs.move(highlightedTabIds, {
+              windowId: newWindow.id,
+              index: -1
+            }, function() {
+              tabUtils.getCurrent(function(currentTab) {
+                console.log('[background] currentTab: ', currentTab);
+                chrome.tabs.remove(currentTab.id);
+              });
+            });
+          });
+        });
+      }
     default:
       return;
   }
