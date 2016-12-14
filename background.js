@@ -26,25 +26,32 @@ var tabUtils = {
     });
   },
   moveTabsToNewWindow: function(tabsToMove) {
+    console.log('[background] this: ', this);
     if (tabsToMove == null || Array.isArray(tabsToMove) && tabsToMove.length === 0) {
       return;
     }
-    chrome.windows.create(function(newWindow) {
-    console.log('[background] newWindow: ', newWindow);
-      var tabsToMoveIds = tabsToMove.map(function(tabToMove) {
-        return tabToMove.id;
-      });
-      console.log('[background] tabsToMoveIds: ', tabsToMoveIds);
-      chrome.tabs.move(tabsToMoveIds, {
-        windowId: newWindow.id,
-        index: -1
-      }, function() {
-        tabUtils.getCurrent(function(currentTab) {
-          console.log('[background] currentTab: ', currentTab);
-          chrome.tabs.remove(currentTab.id);
+    tabUtils.allWindowTabs(function(allWindowTabs) {
+      /* don't create new window if current window has only one tab */
+      if (allWindowTabs.length === 1) {
+        return;
+      }
+      chrome.windows.create(function(newWindow) {
+      console.log('[background] newWindow: ', newWindow);
+        var tabsToMoveIds = tabsToMove.map(function(tabToMove) {
+          return tabToMove.id;
+        });
+        console.log('[background] tabsToMoveIds: ', tabsToMoveIds);
+        chrome.tabs.move(tabsToMoveIds, {
+          windowId: newWindow.id,
+          index: -1
+        }, function() {
+          tabUtils.getCurrent(function(currentTab) {
+            console.log('[background] currentTab: ', currentTab);
+            chrome.tabs.remove(currentTab.id);
+          });
         });
       });
-    });
+    })
 
   }
 };
@@ -137,31 +144,7 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
     case 'MOVE_TO_NEW_WINDOW': {
       console.log('[background] MOVE_TO_NEW_WINDOW');
       if (sender.tab) {
-        tabUtils.allWindowTabs(tabUtils.moveTabsToNewWindow);
-        // tabUtils.allWindowTabs(function(allWindowTabs) {
-        //   /* don't create new window if current window has only one tab */
-        //   if (allWindowTabs.length === 1) {
-        //     return;
-        //   }
-        //   tabUtils.allHighlightedTabs(function(allHighlightedTabs) {
-        //     chrome.windows.create(function(newWindow) {
-        //     console.log('[background] newWindow: ', newWindow);
-        //       var highlightedTabIds = allHighlightedTabs.map(function(highlightedTab) {
-        //         return highlightedTab.id;
-        //       });
-        //       console.log('[background] highlightedTabIds: ', highlightedTabIds);
-        //       chrome.tabs.move(highlightedTabIds, {
-        //         windowId: newWindow.id,
-        //         index: -1
-        //       }, function() {
-        //         tabUtils.getCurrent(function(currentTab) {
-        //           console.log('[background] currentTab: ', currentTab);
-        //           chrome.tabs.remove(currentTab.id);
-        //         });
-        //       });
-        //     });
-        //   });
-        // })
+        tabUtils.allHighlightedTabs(tabUtils.moveTabsToNewWindow);
       }
       break;
     }
