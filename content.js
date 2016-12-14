@@ -42,9 +42,15 @@ Mousetrap.bind('alt+shift+left', function(e) {
     direction: -1
   });
 });
-Mousetrap.bind('alt+shift+m', function() {
+Mousetrap.bind('alt+m', function(e) {
   sendMessage({
     type: 'MOVE_TO_NEW_WINDOW'
+  });
+});
+Mousetrap.bind('alt+shift+m', function(e) {
+  sendMessage({
+    type: 'MOVE_DOMAIN_TABS_TO_NEW_WINDOW',
+    location: document.location
   });
 });
 
@@ -53,9 +59,9 @@ var createMoveToIndex = function(position) {
     sendMessage({
       type: 'MOVE_TAB',
       index: position - 1
-    })
-  }
-}
+    });
+  };
+};
 
 for (var i = 1; i < 10; i++) {
   Mousetrap.bind('alt+' + i, createMoveToIndex(i));

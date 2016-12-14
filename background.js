@@ -13,10 +13,39 @@ var tabUtils = {
   allHighlightedTabs: function(cb) {
     chrome.tabs.query({currentWindow: true, highlighted: true}, cb);
   },
+  allCommonDomainTabs: function(urlPattern, cb) {
+    console.log('[background] @allCommonDomainTabs -> urlPattern: ', urlPattern);
+    chrome.tabs.query({currentWindow: true, url: urlPattern}, function(allCommonDomainTabs) {
+      console.log('[background] allCommonDomainTabs: ', allCommonDomainTabs);
+      cb.call(null, allCommonDomainTabs);
+    });
+  },
   getCurrent: function(cb) {
     chrome.tabs.query({currentWindow: true, active: true}, function(currentTabArr) {
       cb.call(null, currentTabArr[0]);
     });
+  },
+  moveTabsToNewWindow: function(tabsToMove) {
+    if (tabsToMove == null || Array.isArray(tabsToMove) && tabsToMove.length === 0) {
+      return;
+    }
+    chrome.windows.create(function(newWindow) {
+    console.log('[background] newWindow: ', newWindow);
+      var tabsToMoveIds = tabsToMove.map(function(tabToMove) {
+        return tabToMove.id;
+      });
+      console.log('[background] tabsToMoveIds: ', tabsToMoveIds);
+      chrome.tabs.move(tabsToMoveIds, {
+        windowId: newWindow.id,
+        index: -1
+      }, function() {
+        tabUtils.getCurrent(function(currentTab) {
+          console.log('[background] currentTab: ', currentTab);
+          chrome.tabs.remove(currentTab.id);
+        });
+      });
+    });
+
   }
 };
 
@@ -38,13 +67,14 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
         });
       }
       break;
-    case 'DUPLICATE_TAB':
+    case 'DUPLICATE_TAB': {
       console.log('[background] DUPLICATE_TAB');
       if (sender.tab) {
         chrome.tabs.duplicate(sender.tab.id);
       }
       break;
-    case 'CLOSE_TABS_TO_RIGHT':
+    }
+    case 'CLOSE_TABS_TO_RIGHT': {
       console.log('[background] CLOSE_TABS_TO_RIGHT');
       if (sender.tab) {
         tabUtils.allWindowTabs(function(allWindowTabs) {
@@ -60,7 +90,8 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
         });
       }
       break;
-    case 'RELOAD_TABS':
+    }
+    case 'RELOAD_TABS': {
       console.log('[background] RELOAD_TABS');
       if (sender.tab) {
         tabUtils.allWindowTabs(function(allWindowTabs) {
@@ -70,7 +101,8 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
         });
       }
       break;
-    case 'HIGHLIGHT_TABS':
+    }
+    case 'HIGHLIGHT_TABS': {
       console.log('[background] HIGHLIGHT_TABS');
       if (sender.tab) {
         tabUtils.allWindowTabs(function(allWindowTabs) {
@@ -101,35 +133,47 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
         });
       }
       break;
-    case 'MOVE_TO_NEW_WINDOW':
+    }
+    case 'MOVE_TO_NEW_WINDOW': {
       console.log('[background] MOVE_TO_NEW_WINDOW');
       if (sender.tab) {
-        tabUtils.allWindowTabs(function(allWindowTabs) {
-          /* don't create new window if current window has only one tab */
-          if (allWindowTabs.length === 1) {
-            return;
-          }
-          tabUtils.allHighlightedTabs(function(allHighlightedTabs) {
-            chrome.windows.create(function(newWindow) {
-            console.log('[background] newWindow: ', newWindow);
-              var highlightedTabIds = allHighlightedTabs.map(function(highlightedTab) {
-                return highlightedTab.id;
-              });
-              console.log('[background] highlightedTabIds: ', highlightedTabIds);
-              chrome.tabs.move(highlightedTabIds, {
-                windowId: newWindow.id,
-                index: -1
-              }, function() {
-                tabUtils.getCurrent(function(currentTab) {
-                  console.log('[background] currentTab: ', currentTab);
-                  chrome.tabs.remove(currentTab.id);
-                });
-              });
-            });
-          });
-        })
+        tabUtils.allWindowTabs(tabUtils.moveTabsToNewWindow);
+        // tabUtils.allWindowTabs(function(allWindowTabs) {
+        //   /* don't create new window if current window has only one tab */
+        //   if (allWindowTabs.length === 1) {
+        //     return;
+        //   }
+        //   tabUtils.allHighlightedTabs(function(allHighlightedTabs) {
+        //     chrome.windows.create(function(newWindow) {
+        //     console.log('[background] newWindow: ', newWindow);
+        //       var highlightedTabIds = allHighlightedTabs.map(function(highlightedTab) {
+        //         return highlightedTab.id;
+        //       });
+        //       console.log('[background] highlightedTabIds: ', highlightedTabIds);
+        //       chrome.tabs.move(highlightedTabIds, {
+        //         windowId: newWindow.id,
+        //         index: -1
+        //       }, function() {
+        //         tabUtils.getCurrent(function(currentTab) {
+        //           console.log('[background] currentTab: ', currentTab);
+        //           chrome.tabs.remove(currentTab.id);
+        //         });
+        //       });
+        //     });
+        //   });
+        // })
       }
       break;
+    }
+    case 'MOVE_DOMAIN_TABS_TO_NEW_WINDOW': {
+      console.log('[background] MOVE_DOMAIN_TABS_TO_NEW_WINDOW');
+      if (sender.tab) {
+        var location = message.location;
+        var urlPattern = location.protocol + '//' + location.host + '/*';
+        console.log('[background] urlPattern: ', urlPattern);
+        tabUtils.allCommonDomainTabs(urlPattern, tabUtils.moveTabsToNewWindow);
+      }
+    }
     default:
       return;
   }
