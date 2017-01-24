@@ -53,6 +53,11 @@ Mousetrap.bind('alt+shift+m', function(e) {
     location: document.location
   });
 });
+Mousetrap.bind('alt+p', function(e) {
+  sendMessage({
+    type: 'PIN_TAB',
+  });
+});
 
 var createMoveToIndex = function(position) {
   return function(e) {

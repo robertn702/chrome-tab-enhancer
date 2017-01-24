@@ -47,6 +47,19 @@ var tabUtils = {
       cb.call(null, allCommonDomainTabs);
     });
   },
+  allPinnedTabs: function(cb) {
+    chrome.tabs.query({currentWindow: true, pinned: true}, function(allPinnedTabs) {
+      cb.call(null, allPinnedTabs);
+    });
+  },
+  allPinnedTabIds: function(cb) {
+    tabUtils.allPinnedTabs(function(allPinnedTabs) {
+      var pinnedTabIds = allPinnedTabs.map(function(pinnedTab) {
+        return pinnedTab.id;
+      });
+      cb.call(null, pinnedTabIds);
+    });
+  },
   currentTab: function(cb) {
     chrome.tabs.query({currentWindow: true, active: true}, function(currentTabArr) {
       cb.call(null, currentTabArr[0]);
@@ -90,29 +103,6 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
   }
 
   switch (message.type) {
-    case 'MOVE_TAB':
-      console.log('[background] MOVE_TAB');
-      if (sender.tab && message.direction || message.index != null) {
-        console.log('[background] message.index: ', message.index);
-        tabUtils.allWindowTabs(function(allWindowTabs) {
-          var lastIndex = allWindowTabs.length - 1;
-          var newIndex = (message.index != null)
-            ? message.index
-            : sender.tab.index + message.direction;
-          if (newIndex > lastIndex) {
-            newIndex = 0;
-          }
-          chrome.tabs.move(sender.tab.id, {index: newIndex})
-        });
-      }
-      break;
-    case 'DUPLICATE_TAB': {
-      console.log('[background] DUPLICATE_TAB');
-      if (sender.tab) {
-        chrome.tabs.duplicate(sender.tab.id);
-      }
-      break;
-    }
     case 'CLOSE_TABS_TO_RIGHT': {
       console.log('[background] CLOSE_TABS_TO_RIGHT');
       if (sender.tab) {
@@ -130,14 +120,10 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
       }
       break;
     }
-    case 'RELOAD_TABS': {
-      console.log('[background] RELOAD_TABS');
+    case 'DUPLICATE_TAB': {
+      console.log('[background] DUPLICATE_TAB');
       if (sender.tab) {
-        tabUtils.allWindowTabs(function(allWindowTabs) {
-          allWindowTabs.forEach(function(tab) {
-            chrome.tabs.reload(tab.id);
-          });
-        });
+        chrome.tabs.duplicate(sender.tab.id);
       }
       break;
     }
@@ -200,6 +186,23 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
       console.groupEnd();
       break;
     }
+    case 'MOVE_TAB': {
+      console.log('[background] MOVE_TAB');
+      if (sender.tab && message.direction || message.index != null) {
+        console.log('[background] message.index: ', message.index);
+        tabUtils.allWindowTabs(function(allWindowTabs) {
+          var lastIndex = allWindowTabs.length - 1;
+          var newIndex = (message.index != null)
+            ? message.index
+            : sender.tab.index + message.direction;
+          if (newIndex > lastIndex) {
+            newIndex = 0;
+          }
+          chrome.tabs.move(sender.tab.id, {index: newIndex})
+        });
+      }
+      break;
+    }
     case 'MOVE_TO_NEW_WINDOW': {
       console.log('[background] MOVE_TO_NEW_WINDOW');
       if (sender.tab) {
@@ -215,6 +218,30 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
         console.log('[background] urlPattern: ', urlPattern);
         tabUtils.allCommonDomainTabs(urlPattern, tabUtils.moveTabsToNewWindow);
       }
+      break;
+    }
+    case 'PIN_TAB': {
+      console.log('[background] PIN_TAB');
+      if (sender.tab) {
+        tabUtils.allPinnedTabIds(function(allPinnedTabIds) {
+          var tabNotPinned = allPinnedTabIds.indexOf(sender.tab.id) === -1;
+          chrome.tabs.update(sender.tab.id, {
+            pinned: tabNotPinned
+          });
+        });
+      }
+      break;
+    }
+    case 'RELOAD_TABS': {
+      console.log('[background] RELOAD_TABS');
+      if (sender.tab) {
+        tabUtils.allWindowTabs(function(allWindowTabs) {
+          allWindowTabs.forEach(function(tab) {
+            chrome.tabs.reload(tab.id);
+          });
+        });
+      }
+      break;
     }
     default:
       return;
