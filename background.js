@@ -34,6 +34,17 @@ var arrayUtils = {
 };
 
 var tabUtils = {
+  allTabs: function(cb) {
+    chrome.tabs.query({}, cb);
+  },
+  allTabsIds: function(cb) {
+    this.allTabs(function(allTabs) {
+      var allTabsIds = allTabs.map(function(value, idx) {
+        return value.id;
+      });
+      cb(allTabsIds);
+    });
+  },
   allWindowTabs: function(cb) {
     chrome.tabs.query({currentWindow: true}, cb);
   },
@@ -85,6 +96,9 @@ var tabUtils = {
           windowId: newWindow.id,
           index: -1
         }, function() {
+          /**
+           * remove the new tab that is created when the new window is created
+           */
           tabUtils.currentTab(function(currentTab) {
             console.log('[background] currentTab: ', currentTab);
             chrome.tabs.remove(currentTab.id);
@@ -241,6 +255,17 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
           });
         });
       }
+      break;
+    }
+    case 'MERGE_WINDOWS': {
+      chrome.windows.getCurrent({}, function(currentWindow) {
+        tabUtils.allTabsIds(function(allTabsIds) {
+          chrome.tabs.move(allTabsIds, {
+            windowId: currentWindow.id,
+            index: -1
+          });
+        });
+      });
       break;
     }
     default:

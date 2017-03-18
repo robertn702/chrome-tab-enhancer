@@ -58,6 +58,11 @@ Mousetrap.bind('alt+p', function(e) {
     type: 'PIN_TAB',
   });
 });
+Mousetrap.bind('alt+e', function(e) {
+  sendMessage({
+    type: 'MERGE_WINDOWS'
+  });
+});
 
 var createMoveToIndex = function(position) {
   return function(e) {
