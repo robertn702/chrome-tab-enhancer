@@ -1,4 +1,4 @@
-var tabPosition = function(allWindowTabs, tab) {
+function tabPosition(allWindowTabs, tab) {
   var tabLen = allWindowTabs.length;
   return {
     isLast: allWindowTabs.length === tab.index + 1,
@@ -201,9 +201,7 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
       break;
     }
     case 'MOVE_TAB': {
-      console.log('[background] MOVE_TAB');
       if (sender.tab && message.direction || message.index != null) {
-        console.log('[background] message.index: ', message.index);
         tabUtils.allWindowTabs(function(allWindowTabs) {
           var lastIndex = allWindowTabs.length - 1;
           var newIndex = (message.index != null)
@@ -272,3 +270,28 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
       return;
   }
 });
+
+function executeScripts(tabId, filePaths) {
+  filePaths = filePaths || [];
+  if (filePaths.length === 0) {
+    return;
+  }
+
+  chrome.tabs.executeScript(tabId, {file: filePaths.shift()}, function() {
+    executeScripts(tabId, filePaths);
+  });
+}
+
+function loadContentScript() {
+  tabUtils.allTabsIds(function(allTabsIds) {
+    allTabsIds.forEach(function(tabId) {
+      executeScripts(tabId, [
+        './node_modules/mousetrap/mousetrap.min.js',
+        './content.js'
+      ]);
+    });
+  });
+}
+
+chrome.runtime.onStartup.addListener(loadContentScript);
+chrome.runtime.onInstalled.addListener(loadContentScript);
